@@ -8,6 +8,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CameroonPhoneNumberNormalizerTest {
 
@@ -17,22 +18,19 @@ class CameroonPhoneNumberNormalizerTest {
             "690123456, +237690123456",
             "650123456, +237650123456",
             "670123456, +237670123456",
-            
-            // Local fixed-line numbers (start with 2)
-            "222123456, +237222123456",
-            "233123456, +237233123456",
-            
+            "620123456, +237620123456",
+
             // Country-code format without '+'
             "237690123456, +237690123456",
-            "237222123456, +237222123456",
+            "237650123456, +237650123456",
 
             // Country-code format with '+' (already normalized)
             "+237690123456, +237690123456",
-            "+237222123456, +237222123456",
+            "+237670123456, +237670123456",
 
             // Prefix with '00'
             "00237690123456, +237690123456",
-            "00237222123456, +237222123456",
+            "00237650123456, +237650123456",
 
             // Numbers with various formatting characters (spaces, hyphens, dots, parentheses)
             "690 12 34 56, +237690123456",
@@ -40,7 +38,7 @@ class CameroonPhoneNumberNormalizerTest {
             "690.12.34.56, +237690123456",
             "(237) 690 123 456, +237690123456",
             "+237-690-123-456, +237690123456",
-            "  +237 222 123 456  , +237222123456"
+            "  +237 650 123 456  , +237650123456"
     })
     void shouldNormalizeValidCameroonPhoneNumbers(String input, String expected) {
         String result = CameroonPhoneNumberNormalizer.normalize(input);
@@ -89,24 +87,29 @@ class CameroonPhoneNumberNormalizerTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
-            "590123456",           // Invalid local prefix (must start with 2 or 6)
-            "390123456",           // Invalid local prefix (must start with 2 or 6)
-            "237590123456",         // Invalid country code national prefix
-            "+237190123456",        // Invalid country code national prefix
-            "00237790123456",       // Invalid country code national prefix
-            "+590123456"            // Starts with +, but only has 9 digits total and starts with 5
+            "590123456",           // Invalid local prefix (starts with 5)
+            "390123456",           // Invalid local prefix (starts with 3)
+            "290123456",           // Invalid local prefix (starts with 2 — not a mobile number)
+            "222123456",           // Looks like fixed-line but fixed-line is not supported
+            "190123456",           // Invalid local prefix (starts with 1)
+            "237590123456",        // Invalid national prefix via country code
+            "+237190123456",       // Invalid national prefix via country code
+            "00237790123456",      // Invalid national prefix via 00 prefix
+            "237290123456",        // Starts with 2 via country code — not supported
+            "+237222123456",       // Fixed-line via country code — not supported
+            "+590123456"           // Starts with +, but only 9 digits total and starts with 5
     })
     void shouldRejectInputsWithInvalidCameroonPrefix(String input) {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
                 CameroonPhoneNumberNormalizer.normalize(input)
         );
-        // Message will either indicate invalid Cameroon prefix or invalid country code
         String message = exception.getMessage();
-        org.junit.jupiter.api.Assertions.assertTrue(
-                message.contains("Invalid Cameroon phone number prefix") || 
+        assertTrue(
+                message.contains("Invalid Cameroon phone number prefix") ||
                 message.contains("Invalid country code") ||
                 message.contains("Local phone number format cannot start with '+'") ||
-                message.contains("Phone number has an invalid length or format")
+                message.contains("Phone number has an invalid length or format"),
+                "Unexpected error message: " + message
         );
     }
 
@@ -121,9 +124,10 @@ class CameroonPhoneNumberNormalizerTest {
                 CameroonPhoneNumberNormalizer.normalize(input)
         );
         String message = exception.getMessage();
-        org.junit.jupiter.api.Assertions.assertTrue(
-                message.contains("Invalid country code") || 
-                message.contains("Phone number has an invalid length or format")
+        assertTrue(
+                message.contains("Invalid country code") ||
+                message.contains("Phone number has an invalid length or format"),
+                "Unexpected error message: " + message
         );
     }
 
@@ -141,9 +145,10 @@ class CameroonPhoneNumberNormalizerTest {
                 CameroonPhoneNumberNormalizer.normalize(input)
         );
         String message = exception.getMessage();
-        org.junit.jupiter.api.Assertions.assertTrue(
-                message.contains("Phone number is too short") || 
-                message.contains("Phone number has an invalid length")
+        assertTrue(
+                message.contains("Phone number is too short") ||
+                message.contains("Phone number has an invalid length"),
+                "Unexpected error message: " + message
         );
     }
 
