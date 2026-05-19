@@ -1,0 +1,110 @@
+openapi: 3.1.0
+info:
+  title: NumShield API
+  description: >-
+    Phone number intelligence API for Cameroon. Provides normalization,
+    validation, and operator detection for Cameroon phone numbers. Designed for
+    integration into user registration flows and fraud detection systems.
+  contact:
+    name: NumShield Team
+  license:
+    name: GNU General Public License v3.0
+    url: https://www.gnu.org/licenses/gpl-3.0.html
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+tags:
+  - name: Phone Number Normalization
+    description: Endpoints for validating and normalizing Cameroon phone numbers
+paths:
+  /api/v1/phone-numbers/normalize:
+    get:
+      tags:
+        - Phone Number Normalization
+      summary: Normalize Cameroon phone number (GET)
+      description: >-
+        Validates and normalizes any supported Cameroon phone number format
+        into the standardized '+237XXXXXXXXX' format.
+      operationId: normalizeGet
+      parameters:
+        - name: number
+          in: query
+          description: The raw phone number to be normalized
+          required: true
+          schema:
+            type: string
+          example: "690123456"
+      responses:
+        "200":
+          description: Phone number successfully validated and normalized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NormalizationResponse"
+        "400":
+          description: Malformed input or validation failure
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      tags:
+        - Phone Number Normalization
+      summary: Normalize Cameroon phone number (POST)
+      description: >-
+        Validates and normalizes any supported Cameroon phone number format
+        into the standardized '+237XXXXXXXXX' format.
+      operationId: normalizePost
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NormalizationRequest"
+        required: true
+      responses:
+        "200":
+          description: Phone number successfully validated and normalized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NormalizationResponse"
+        "400":
+          description: Malformed input or validation failure
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+components:
+  schemas:
+    NormalizationRequest:
+      type: object
+      required:
+        - phoneNumber
+      properties:
+        phoneNumber:
+          type: string
+          description: >-
+            The raw phone number to be normalized. Supports local, country-code
+            with or without +, and 00 prefixes.
+          example: "690123456"
+    NormalizationResponse:
+      type: object
+      properties:
+        raw:
+          type: string
+          description: The original raw phone number input provided by the client
+          example: "690 12 34 56"
+        normalized:
+          type: string
+          description: The normalized phone number in standard Cameroon format (+237XXXXXXXXX)
+          example: "+237690123456"
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: >-
+            Descriptive validation error message explaining why the
+            normalization failed
+          example: "Phone number contains invalid characters"
