@@ -15,13 +15,66 @@ servers:
   - url: http://localhost:8080
     description: Local development server
 tags:
-  - name: Phone Number Normalization
-    description: Endpoints for validating and normalizing Cameroon phone numbers
+  - name: Phone Number Services
+    description: Endpoints for normalizing and validating Cameroon phone numbers
 paths:
+  /api/v1/phone-numbers/validate:
+    get:
+      tags:
+        - Phone Number Services
+      summary: Validate Cameroon phone number (GET)
+      description: Validates any Cameroon phone number format and returns whether it is valid or not.
+      operationId: validateGet
+      parameters:
+        - name: number
+          in: query
+          description: The phone number to validate
+          required: true
+          schema:
+            type: string
+          example: "690123456"
+      responses:
+        "200":
+          description: Phone number is valid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationResponse"
+        "400":
+          description: Invalid phone number format or value
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      tags:
+        - Phone Number Services
+      summary: Validate Cameroon phone number (POST)
+      description: Validates any Cameroon phone number format using JSR-380 annotations and Cameroon numbering rules.
+      operationId: validatePost
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ValidationRequest"
+        required: true
+      responses:
+        "200":
+          description: Phone number is valid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationResponse"
+        "400":
+          description: Invalid phone number format or value
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /api/v1/phone-numbers/normalize:
     get:
       tags:
-        - Phone Number Normalization
+        - Phone Number Services
       summary: Normalize Cameroon phone number (GET)
       description: >-
         Validates and normalizes any supported Cameroon phone number format
@@ -50,7 +103,7 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
     post:
       tags:
-        - Phone Number Normalization
+        - Phone Number Services
       summary: Normalize Cameroon phone number (POST)
       description: >-
         Validates and normalizes any supported Cameroon phone number format
@@ -77,6 +130,27 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
 components:
   schemas:
+    ValidationRequest:
+      type: object
+      required:
+        - phoneNumber
+      properties:
+        phoneNumber:
+          type: string
+          description: The raw or normalized phone number to validate against Cameroon standards
+          example: "690123456"
+          minLength: 1
+    ValidationResponse:
+      type: object
+      properties:
+        phoneNumber:
+          type: string
+          description: The normalized version of the validated phone number
+          example: "+237690123456"
+        valid:
+          type: boolean
+          description: True if the phone number is valid according to Cameroon standards, false otherwise
+          example: true
     NormalizationRequest:
       type: object
       required:

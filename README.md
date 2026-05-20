@@ -80,6 +80,37 @@ curl -X POST http://localhost:8080/api/v1/phone-numbers/normalize \
 }
 ```
 
+### 3. Validate Phone Number (GET)
+
+**Request:**
+```bash
+curl "http://localhost:8080/api/v1/phone-numbers/validate?number=690123456"
+```
+
+**Response (200 OK):**
+```json
+{
+  "phoneNumber": "+237690123456",
+  "valid": true
+}
+```
+
+### 4. Validate Phone Number (POST)
+
+**Request:**
+```bash
+curl -X POST http://localhost:8080/api/v1/phone-numbers/validate \
+  -H "Content-Type: application/json" \
+  -d '{"phoneNumber": "+237590123456"}'
+```
+
+**Response (400 Bad Request):**
+```json
+{
+  "error": "Invalid Cameroon phone number prefix: must start with 2 or 6"
+}
+```
+
 ## Running the Application Locally
 
 To start the local development server:

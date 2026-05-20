@@ -2,7 +2,10 @@ package com.numshield.numshield_api.util;
 
 /**
  * Utility class for normalizing Cameroon phone numbers.
- * The normalized format is always {@code +237XXXXXXXXX} (where XXXXXXXXX are 9 digits starting with 2 or 6).
+ * The normalized format is always {@code +237XXXXXXXXX} (where XXXXXXXXX are 9 digits starting with 6).
+ *
+ * <p>Currently only mobile numbers (prefix 6) are supported.
+ * The only accepted country code is +237 (Cameroon).</p>
  */
 public final class CameroonPhoneNumberNormalizer {
 
@@ -34,7 +37,7 @@ public final class CameroonPhoneNumberNormalizer {
         }
 
         // Remove all formatting characters (spaces, hyphens, parentheses, dots)
-        String cleaned = trimmed.replaceAll("[\\s\\-\\(\\)\\.]", "");
+        String cleaned = trimmed.replaceAll("[\\s\\-\\(\\)\\.]+", "");
 
         if (cleaned.isEmpty()) {
             throw new IllegalArgumentException("Phone number cannot be empty or blank after removing formatting characters");
@@ -55,9 +58,8 @@ public final class CameroonPhoneNumberNormalizer {
             if (hasPlus) {
                 throw new IllegalArgumentException("Local phone number format cannot start with '+'");
             }
-            char firstDigit = digits.charAt(0);
-            if (firstDigit != '2' && firstDigit != '6') {
-                throw new IllegalArgumentException("Invalid Cameroon phone number prefix: must start with 2 or 6");
+            if (digits.charAt(0) != '6') {
+                throw new IllegalArgumentException("Invalid Cameroon phone number prefix: must start with 6");
             }
             return "+237" + digits;
         }
@@ -67,9 +69,8 @@ public final class CameroonPhoneNumberNormalizer {
             if (!digits.startsWith("237")) {
                 throw new IllegalArgumentException("Invalid country code: " + digits.substring(0, 3) + " (only Cameroon (+237) is supported)");
             }
-            char firstNationalDigit = digits.charAt(3);
-            if (firstNationalDigit != '2' && firstNationalDigit != '6') {
-                throw new IllegalArgumentException("Invalid Cameroon phone number prefix: must start with 2 or 6");
+            if (digits.charAt(3) != '6') {
+                throw new IllegalArgumentException("Invalid Cameroon phone number prefix: must start with 6");
             }
             return "+237" + digits.substring(3);
         }
@@ -79,9 +80,8 @@ public final class CameroonPhoneNumberNormalizer {
             if (hasPlus) {
                 throw new IllegalArgumentException("Phone number starting with '00' cannot also start with '+'");
             }
-            char firstNationalDigit = digits.charAt(5);
-            if (firstNationalDigit != '2' && firstNationalDigit != '6') {
-                throw new IllegalArgumentException("Invalid Cameroon phone number prefix: must start with 2 or 6");
+            if (digits.charAt(5) != '6') {
+                throw new IllegalArgumentException("Invalid Cameroon phone number prefix: must start with 6");
             }
             return "+237" + digits.substring(5);
         }
