@@ -40,7 +40,7 @@ jobs:
   # Job 1 — Build & Test
   # ---------------------------------------------------------------------------
   build-and-test:
-    name: Build & Test (Java ${{ env.JAVA_VERSION }})
+    name: Build & Test (Java 21)
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -52,7 +52,7 @@ jobs:
           fetch-depth: 0          # Full history — needed for accurate diff reports
 
       # ── Java toolchain ──────────────────────────────────────────────────────
-      - name: Set up JDK ${{ env.JAVA_VERSION }} (Temurin)
+      - name: Set up JDK 21 (Temurin)
         uses: actions/setup-java@v4
         with:
           java-version: ${{ env.JAVA_VERSION }}
@@ -95,7 +95,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up JDK ${{ env.JAVA_VERSION }} (Temurin)
+      - name: Set up JDK 21 (Temurin)
         uses: actions/setup-java@v4
         with:
           java-version: ${{ env.JAVA_VERSION }}
