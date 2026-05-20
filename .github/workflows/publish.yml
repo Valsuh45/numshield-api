@@ -1,0 +1,165 @@
+# =============================================================================
+# Publish — Build & Push Docker Image to GHCR
+#
+# Triggers:
+#   • Push to `develop`  → builds and pushes a `develop-<sha>` + `develop` tag
+#   • Push to `main`     → builds and pushes a semver tag + `latest`
+#
+# Image registry: ghcr.io/<owner>/<repo>
+#
+# Required repository secrets / permissions:
+#   • `GITHUB_TOKEN` is automatically available — no extra secret needed.
+#   • The workflow uses the built-in GITHUB_TOKEN with `packages: write` to
+#     authenticate against GHCR.
+#
+# Image tags produced on merge to `develop`:
+#   ghcr.io/<owner>/<repo>:develop
+#   ghcr.io/<owner>/<repo>:develop-<7-char-sha>
+# =============================================================================
+
+name: Publish
+
+on:
+  push:
+    branches:
+      - develop
+      - main
+    tags:
+      - "v*.*.*"                  # Trigger on semver release tags too
+
+# Only one publish job per ref runs at a time; cancel older ones.
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  JAVA_VERSION: "21"
+  JAVA_DISTRIBUTION: "temurin"
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Job 1 — Run the full test suite before building the image.
+  # Publishing a broken image would be worse than a failed pipeline.
+  # ---------------------------------------------------------------------------
+  test:
+    name: Tests must pass before publishing
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }} (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          cache: maven
+
+      - name: Run full test suite
+        run: ./mvnw test --no-transfer-progress -B
+
+      - name: Upload Surefire test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: publish-surefire-reports-${{ github.run_number }}
+          path: target/surefire-reports/
+          retention-days: 7
+
+  # ---------------------------------------------------------------------------
+  # Job 2 — Build the Docker image and push it to GHCR.
+  # ---------------------------------------------------------------------------
+  build-and-push:
+    name: Build & Push Docker image → GHCR
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: test                    # Gate: only runs if all tests pass
+
+    permissions:
+      contents: read
+      packages: write              # Required to push to GHCR
+
+    steps:
+      # ── Checkout ────────────────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── Set up QEMU (needed for multi-platform builds) ───────────────────
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      # ── Set up Docker Buildx ─────────────────────────────────────────────
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # ── Authenticate to GHCR ─────────────────────────────────────────────
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # ── Derive image metadata & tags ─────────────────────────────────────
+      # docker/metadata-action automatically generates:
+      #   • `develop`                    — when pushed to the develop branch
+      #   • `develop-<sha>`              — short commit SHA for traceability
+      #   • `latest` + `v<semver>`       — when a vX.Y.Z tag is pushed
+      #   • `main`                       — when pushed to the main branch
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            # Branch-based tags
+            type=ref,event=branch
+            # Short SHA suffix — always present, enables precise rollbacks
+            type=sha,prefix={{branch}}-,format=short,event=branch
+            # SemVer tags from git tags (vX.Y.Z)
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+          labels: |
+            org.opencontainers.image.title=NumShield API
+            org.opencontainers.image.description=Cameroon phone number normalization and validation service
+            org.opencontainers.image.vendor=NumShield
+            org.opencontainers.image.licenses=GPL-3.0
+
+      # ── Build & Push ──────────────────────────────────────────────────────
+      - name: Build and push Docker image
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          platforms: linux/amd64,linux/arm64   # amd64 + Apple Silicon / AWS Graviton
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          # Layer caching via GitHub Actions cache — cuts rebuild time significantly
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            BUILD_DATE=${{ github.event.head_commit.timestamp }}
+            GIT_SHA=${{ github.sha }}
+
+      # ── Print image digest for audit trail ───────────────────────────────
+      - name: Summarize published image
+        run: |
+          echo "## 🐳 Docker image published" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Registry:** \`${{ env.REGISTRY }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Tags pushed:**" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "${{ steps.meta.outputs.tags }}" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Image digest:** \`${{ steps.push.outputs.digest }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Triggered by:** \`${{ github.actor }}\`" >> $GITHUB_STEP_SUMMARY
