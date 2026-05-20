@@ -1,0 +1,124 @@
+# =============================================================================
+# Continuous Integration — NumShield API
+#
+# Triggers:
+#   • Every push to `develop` or `main`
+#   • Every pull request targeting `develop` or `main`
+#
+# Pipeline stages:
+#   1. build-and-test  → compile + unit/integration tests (JUnit 5 via Maven)
+#   2. code-quality    → Checkstyle enforcement (optional, non-blocking for now)
+#
+# Artefacts produced:
+#   • Surefire test reports (HTML + XML) — retained for 7 days
+# =============================================================================
+
+name: CI
+
+on:
+  push:
+    branches:
+      - develop
+      - main
+  pull_request:
+    branches:
+      - develop
+      - main
+
+# Cancel any in-progress run for the same ref when a newer commit is pushed,
+# preventing stale jobs from wasting runner minutes.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  JAVA_VERSION: "21"
+  JAVA_DISTRIBUTION: "temurin"
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Job 1 — Build & Test
+  # ---------------------------------------------------------------------------
+  build-and-test:
+    name: Build & Test (Java ${{ env.JAVA_VERSION }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      # ── Checkout ────────────────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0          # Full history — needed for accurate diff reports
+
+      # ── Java toolchain ──────────────────────────────────────────────────────
+      - name: Set up JDK ${{ env.JAVA_VERSION }} (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          cache: maven             # Cache ~/.m2/repository between runs
+
+      # ── Validate POM ────────────────────────────────────────────────────────
+      - name: Validate Maven POM
+        run: ./mvnw validate --no-transfer-progress -B -q
+
+      # ── Compile ─────────────────────────────────────────────────────────────
+      - name: Compile
+        run: ./mvnw compile --no-transfer-progress -B -q
+
+      # ── Test ────────────────────────────────────────────────────────────────
+      - name: Run tests
+        run: ./mvnw test --no-transfer-progress -B
+
+      # ── Upload test reports ─────────────────────────────────────────────────
+      - name: Upload Surefire test reports
+        if: always()              # Upload even when tests fail so failures are visible
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports-${{ github.run_number }}
+          path: target/surefire-reports/
+          retention-days: 7
+
+  # ---------------------------------------------------------------------------
+  # Job 2 — Build Verification (full package without tests)
+  # Verifies that the project can produce a runnable JAR — catches packaging
+  # issues that don't surface during the test compile phase.
+  # ---------------------------------------------------------------------------
+  package-verify:
+    name: Package Verification
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: build-and-test          # Only run if tests pass
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }} (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+          cache: maven
+
+      - name: Package (skip tests — already covered in build-and-test)
+        run: ./mvnw package --no-transfer-progress -B -DskipTests -q
+
+      - name: Verify JAR was produced
+        run: |
+          JAR_COUNT=$(find target -maxdepth 1 -name "*.jar" ! -name "*sources*" ! -name "*javadoc*" | wc -l)
+          if [ "$JAR_COUNT" -eq 0 ]; then
+            echo "::error::No executable JAR found in target/. Packaging failed."
+            exit 1
+          fi
+          echo "✅ JAR produced successfully:"
+          find target -maxdepth 1 -name "*.jar" ! -name "*sources*" ! -name "*javadoc*"
+
+      - name: Upload packaged JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: numshield-api-jar-${{ github.run_number }}
+          path: target/*.jar
+          retention-days: 3
+          if-no-files-found: error
