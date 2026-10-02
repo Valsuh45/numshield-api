@@ -3,6 +3,8 @@ package com.numshield.numshield_api.exception;
 import com.numshield.numshield_api.dto.StandardApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -16,6 +18,18 @@ import java.util.stream.Collectors;
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<StandardApiResponse<Void>> handleUnsupportedMethod(HttpRequestMethodNotSupportedException e) {
+        return ResponseEntity.status(e.getStatusCode()).headers(e.getHeaders())
+                .body(StandardApiResponse.error("INVALID_REQUEST", "HTTP method is not supported for this endpoint", "REQUEST_VALIDATION"));
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<StandardApiResponse<Void>> handleUnsupportedMediaType(HttpMediaTypeNotSupportedException e) {
+        return ResponseEntity.status(e.getStatusCode()).headers(e.getHeaders())
+                .body(StandardApiResponse.error("INVALID_REQUEST", "Request content type is not supported; use application/json", "REQUEST_VALIDATION"));
+    }
 
     @ExceptionHandler({HttpMessageNotReadableException.class, MissingServletRequestParameterException.class})
     public ResponseEntity<StandardApiResponse<Void>> handleMalformedRequest(Exception e) {

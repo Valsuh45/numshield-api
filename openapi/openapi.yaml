@@ -2,7 +2,11 @@ openapi: 3.1.0
 info:
   title: NumShield API
   version: 1.0.0
-  description: Cameroon phone-number normalization, validation, and operator detection.
+  description: >-
+    Free initial v1 release with no billing or paywall. Cameroon mobile-number normalization,
+    structural validation, and configured prefix-allocation lookup. Neither validity nor
+    operator results prove reachability or ownership. This response envelope replaces the
+    pre-release unwrapped format; see the README for client migration guidance.
   license:
     name: GNU General Public License v3.0
     url: https://www.gnu.org/licenses/gpl-3.0.html
@@ -28,6 +32,10 @@ paths:
                 $ref: '#/components/schemas/VerificationApiResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
   /api/v1/phone-numbers/normalize:
     get:
       summary: Normalize a Cameroon phone number
@@ -43,6 +51,8 @@ paths:
                 $ref: '#/components/schemas/NormalizationApiResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
     post:
       summary: Normalize a Cameroon phone number
       operationId: normalizePost
@@ -61,6 +71,10 @@ paths:
                 $ref: '#/components/schemas/NormalizationApiResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
   /api/v1/phone-numbers/validate:
     get:
       summary: Validate a Cameroon phone number
@@ -76,6 +90,8 @@ paths:
                 $ref: '#/components/schemas/ValidationApiResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
     post:
       summary: Validate a Cameroon phone number
       operationId: validatePost
@@ -94,6 +110,10 @@ paths:
                 $ref: '#/components/schemas/ValidationApiResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
 components:
   parameters:
     Number:
@@ -104,6 +124,29 @@ components:
         type: string
       example: '690123456'
   responses:
+    MethodNotAllowed:
+      description: Unsupported HTTP method; INVALID_REQUEST at REQUEST_VALIDATION
+      headers:
+        Allow:
+          description: Supported HTTP methods for the requested endpoint
+          schema:
+            type: string
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorApiResponse'
+    UnsupportedMediaType:
+      description: Unsupported request content type; INVALID_REQUEST at REQUEST_VALIDATION
+      headers:
+        Accept:
+          description: Supported request content types
+          schema:
+            type: string
+            example: application/json
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorApiResponse'
     BadRequest:
       description: Invalid request or phone number
       content:
@@ -117,6 +160,7 @@ components:
       properties:
         phoneNumber:
           type: string
+          description: Non-blank JSON string; non-string values are rejected without coercion
           minLength: 1
           example: '690123456'
     VerificationApiResponse:
@@ -185,9 +229,11 @@ components:
           example: '+237690123456'
         valid:
           type: boolean
+          description: Structural validity only; does not prove reachability or ownership
           const: true
         operator:
           type: string
+          description: Configured prefix allocation, not a live serving-network lookup
           enum: [MTN, ORANGE, NEXTTEL, CAMTEL, UNKNOWN]
         countryCode:
           type: string
@@ -213,4 +259,5 @@ components:
           example: '+237690123456'
         valid:
           type: boolean
+          description: Structural validity only; does not prove reachability or ownership
           const: true

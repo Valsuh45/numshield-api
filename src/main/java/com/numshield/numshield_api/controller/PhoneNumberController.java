@@ -22,6 +22,8 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/api/v1/phone-numbers")
+@ApiResponse(responseCode = "405", description = "HTTP method is not supported",
+        content = @Content(schema = @Schema(implementation = StandardApiResponse.class)))
 @Tag(name = "Phone Number Services", description = "Endpoints for normalizing and validating Cameroon phone numbers")
 public class PhoneNumberController {
 
@@ -32,6 +34,8 @@ public class PhoneNumberController {
      * @return the normalized phone number or an error message
      */
     @PostMapping(value = "/normalize", consumes = "application/json", produces = "application/json")
+    @ApiResponse(responseCode = "415", description = "Request content type is not supported",
+            content = @Content(schema = @Schema(implementation = StandardApiResponse.class)))
     @Operation(
             summary = "Normalize Cameroon phone number (POST)",
             description = "Validates and normalizes any supported Cameroon phone number format into the standardized '+237XXXXXXXXX' format.",
@@ -39,7 +43,7 @@ public class PhoneNumberController {
                     @ApiResponse(
                             responseCode = "200",
                             description = "Phone number successfully validated and normalized",
-                            content = @Content(schema = @Schema(implementation = NormalizationResponse.class))
+                            useReturnTypeSchema = true
                     ),
                     @ApiResponse(
                             responseCode = "400",
@@ -48,10 +52,7 @@ public class PhoneNumberController {
                     )
             }
     )
-    public ResponseEntity<StandardApiResponse<NormalizationResponse>> normalizePost(@RequestBody NormalizationRequest request) {
-        if (request == null || request.getPhoneNumber() == null) {
-            throw new IllegalArgumentException("Missing 'phoneNumber' field in request body");
-        }
+    public ResponseEntity<StandardApiResponse<NormalizationResponse>> normalizePost(@Valid @RequestBody NormalizationRequest request) {
         return processNormalization(request.getPhoneNumber());
     }
 
@@ -69,7 +70,7 @@ public class PhoneNumberController {
                     @ApiResponse(
                             responseCode = "200",
                             description = "Phone number successfully validated and normalized",
-                            content = @Content(schema = @Schema(implementation = NormalizationResponse.class))
+                            useReturnTypeSchema = true
                     ),
                     @ApiResponse(
                             responseCode = "400",
@@ -91,6 +92,8 @@ public class PhoneNumberController {
      * @return the validation details or an error message
      */
     @PostMapping(value = "/validate", consumes = "application/json", produces = "application/json")
+    @ApiResponse(responseCode = "415", description = "Request content type is not supported",
+            content = @Content(schema = @Schema(implementation = StandardApiResponse.class)))
     @Operation(
             summary = "Validate Cameroon phone number (POST)",
             description = "Validates any Cameroon phone number format using JSR-380 annotations and Cameroon numbering rules.",
@@ -98,7 +101,7 @@ public class PhoneNumberController {
                     @ApiResponse(
                             responseCode = "200",
                             description = "Phone number is valid",
-                            content = @Content(schema = @Schema(implementation = ValidationResponse.class))
+                            useReturnTypeSchema = true
                     ),
                     @ApiResponse(
                             responseCode = "400",
@@ -129,7 +132,7 @@ public class PhoneNumberController {
                     @ApiResponse(
                             responseCode = "200",
                             description = "Phone number is valid",
-                            content = @Content(schema = @Schema(implementation = ValidationResponse.class))
+                            useReturnTypeSchema = true
                     ),
                     @ApiResponse(
                             responseCode = "400",

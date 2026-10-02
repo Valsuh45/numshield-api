@@ -20,7 +20,7 @@ public class ValidationResponse {
     private String phoneNumber;
 
     @Schema(
-        description = "True if the phone number is valid according to Cameroon standards, false otherwise",
+        description = "Structural validity only; does not prove reachability or ownership",
         example = "true"
     )
     private boolean valid;
