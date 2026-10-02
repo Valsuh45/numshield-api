@@ -30,8 +30,9 @@ class PhoneNumberControllerTest {
         mockMvc.perform(get("/api/v1/phone-numbers/normalize")
                         .param("number", "690123456"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.raw").value("690123456"))
-                .andExpect(jsonPath("$.normalized").value("+237690123456"));
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.raw").value("690123456"))
+                .andExpect(jsonPath("$.data.normalized").value("+237690123456"));
     }
 
     @Test
@@ -39,7 +40,8 @@ class PhoneNumberControllerTest {
         mockMvc.perform(get("/api/v1/phone-numbers/normalize")
                         .param("number", "invalid"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").exists());
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("INVALID_PHONE_NUMBER"));
     }
 
     @Test
@@ -48,8 +50,9 @@ class PhoneNumberControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"phoneNumber\":\"690123456\"}"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.raw").value("690123456"))
-                .andExpect(jsonPath("$.normalized").value("+237690123456"));
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.raw").value("690123456"))
+                .andExpect(jsonPath("$.data.normalized").value("+237690123456"));
     }
 
     @Test
@@ -58,7 +61,8 @@ class PhoneNumberControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"phoneNumber\":\"invalid\"}"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").exists());
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("INVALID_PHONE_NUMBER"));
     }
 
     // --- VALIDATION ENDPOINTS TESTS ---
@@ -68,8 +72,9 @@ class PhoneNumberControllerTest {
         mockMvc.perform(get("/api/v1/phone-numbers/validate")
                         .param("number", "690123456"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.phoneNumber").value("+237690123456"))
-                .andExpect(jsonPath("$.valid").value(true));
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.phoneNumber").value("+237690123456"))
+                .andExpect(jsonPath("$.data.valid").value(true));
     }
 
     @Test
@@ -77,7 +82,7 @@ class PhoneNumberControllerTest {
         mockMvc.perform(get("/api/v1/phone-numbers/validate")
                         .param("number", "234690123456")) // Nigeria country code
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("Invalid country code: 234 (only Cameroon (+237) is supported)"));
+                .andExpect(jsonPath("$.error.message").value("Invalid country code: 234 (only Cameroon (+237) is supported)"));
     }
 
     @Test
@@ -86,8 +91,9 @@ class PhoneNumberControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"phoneNumber\":\"690123456\"}"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.phoneNumber").value("+237690123456"))
-                .andExpect(jsonPath("$.valid").value(true));
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.phoneNumber").value("+237690123456"))
+                .andExpect(jsonPath("$.data.valid").value(true));
     }
 
     @Test
@@ -96,7 +102,7 @@ class PhoneNumberControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"phoneNumber\":\"+237590123456\"}")) // Invalid prefix 5
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("Invalid Cameroon phone number prefix: must start with 6"));
+                .andExpect(jsonPath("$.error.message").value("Invalid Cameroon phone number prefix: must start with 6"));
     }
 
     @Test
@@ -105,6 +111,7 @@ class PhoneNumberControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"phoneNumber\":\"\"}"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").exists());
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("INVALID_REQUEST"));
     }
 }

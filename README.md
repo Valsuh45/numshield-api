@@ -1,128 +1,74 @@
 # NumShield API
 
-A utility API for phone number intelligence, validation, and operator detection.
+NumShield is a Cameroon phone-number intelligence API. It normalizes numbers, validates them against the national mobile format, identifies the originating telecom operator, and exposes those capabilities through a versioned REST API.
 
-## Utilities
+## Requirements
 
-### Cameroon Phone Number Normalizer
+- Java 21
+- Docker (optional)
 
-The `CameroonPhoneNumberNormalizer` class provides a reusable utility method to validate and normalize Cameroon phone numbers to the standardized format: `+237XXXXXXXXX`.
-
-#### Features
-- Automatically removes formatting characters (spaces, hyphens, parentheses, and dots).
-- Supports and normalizes various input formats:
-  - Local 9-digit format (starting with `2` or `6`): `690123456` → `+237690123456`
-  - Country code format without `+`: `237690123456` → `+237690123456`
-  - Already normalized format: `+237690123456` → `+237690123456`
-  - International exit code format: `00237690123456` → `+237690123456`
-- Rejects invalid formats, wrong lengths, wrong country codes, invalid prefixes, or malformed inputs, throwing an `IllegalArgumentException` with a clear message.
-- Safely handles `null`, empty, and blank inputs.
-
-#### Usage Example
-
-```java
-import com.numshield.numshield_api.util.CameroonPhoneNumberNormalizer;
-
-try {
-    String normalized = CameroonPhoneNumberNormalizer.normalize("690 12 34 56");
-    // Result: +237690123456
-} catch (IllegalArgumentException e) {
-    // Handle validation failure
-    System.out.println("Validation failed: " + e.getMessage());
-}
-```
-
-## REST API Endpoints & Swagger Documentation
-
-A REST controller is exposed at `/api/v1/phone-numbers`. You can view the automatically generated Swagger UI and OpenAPI documentation when the application is running locally:
-
-- **Swagger UI**: [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
-- **OpenAPI JSON Spec**: [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs)
-- **OpenAPI YAML Spec**: [http://localhost:8080/v3/api-docs.yaml](http://localhost:8080/v3/api-docs.yaml)
-- **Static OAS3 YAML**: [`openapi/openapi.yaml`](openapi/openapi.yaml) — committed to the repo for offline reference and client SDK generation
-
-### 1. Normalize Phone Number (GET)
-
-**Request:**
-```bash
-curl "http://localhost:8080/api/v1/phone-numbers/normalize?number=690123456"
-```
-
-**Response (200 OK):**
-```json
-{
-  "raw": "690123456",
-  "normalized": "+237690123456"
-}
-```
-
-### 2. Normalize Phone Number (POST)
-
-**Request:**
-```bash
-curl -X POST http://localhost:8080/api/v1/phone-numbers/normalize \
-  -H "Content-Type: application/json" \
-  -d '{"phoneNumber": "690 12 34 56"}'
-```
-
-**Response (200 OK):**
-```json
-{
-  "raw": "690 12 34 56",
-  "normalized": "+237690123456"
-}
-```
-
-**Response on Error (400 Bad Request):**
-```json
-{
-  "error": "Phone number contains invalid characters"
-}
-```
-
-### 3. Validate Phone Number (GET)
-
-**Request:**
-```bash
-curl "http://localhost:8080/api/v1/phone-numbers/validate?number=690123456"
-```
-
-**Response (200 OK):**
-```json
-{
-  "phoneNumber": "+237690123456",
-  "valid": true
-}
-```
-
-### 4. Validate Phone Number (POST)
-
-**Request:**
-```bash
-curl -X POST http://localhost:8080/api/v1/phone-numbers/validate \
-  -H "Content-Type: application/json" \
-  -d '{"phoneNumber": "+237590123456"}'
-```
-
-**Response (400 Bad Request):**
-```json
-{
-  "error": "Invalid Cameroon phone number prefix: must start with 2 or 6"
-}
-```
-
-## Running the Application Locally
-
-To start the local development server:
+## Run locally
 
 ```bash
 ./mvnw spring-boot:run
 ```
 
-## Running Tests
+Swagger UI is available at `http://localhost:8080/swagger-ui/index.html`; generated OpenAPI JSON is available at `http://localhost:8080/v3/api-docs`.
 
-To run the unit and integration tests:
+## Verify a phone number
+
+`POST /api/v1/number/verify` runs normalization, validation, and operator detection in one request.
 
 ```bash
-./mvnw clean test
+curl -X POST http://localhost:8080/api/v1/number/verify \
+  -H "Content-Type: application/json" \
+  -d '{"phoneNumber":"690 12 34 56"}'
 ```
+
+```json
+{
+  "success": true,
+  "data": {
+    "input": "690 12 34 56",
+    "normalized": "+237690123456",
+    "valid": true,
+    "operator": "ORANGE",
+    "countryCode": "237",
+    "country": "CM"
+  },
+  "timestamp": "2026-10-02T08:00:00Z"
+}
+```
+
+Known operators are `MTN`, `ORANGE`, `NEXTTEL`, and `CAMTEL`. A structurally valid mobile range that has no configured allocation is returned as `UNKNOWN`.
+
+## Other endpoints
+
+- `GET /api/v1/phone-numbers/normalize?number=690123456`
+- `POST /api/v1/phone-numbers/normalize`
+- `GET /api/v1/phone-numbers/validate?number=690123456`
+- `POST /api/v1/phone-numbers/validate`
+
+POST requests accept `{"phoneNumber":"..."}`. Every endpoint uses the same response envelope. Errors set `success` to `false` and include a stable code, message, and processing stage:
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "INVALID_PHONE_NUMBER",
+    "message": "Phone number contains invalid characters",
+    "stage": "NORMALIZATION"
+  },
+  "timestamp": "2026-10-02T08:00:00Z"
+}
+```
+
+## Test and package
+
+```bash
+./mvnw test
+./mvnw package
+docker build -t numshield-api .
+```
+
+The maintained static API contract is in [`openapi/openapi.yaml`](openapi/openapi.yaml).
