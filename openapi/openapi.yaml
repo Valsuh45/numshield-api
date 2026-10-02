@@ -1,184 +1,263 @@
 openapi: 3.1.0
 info:
   title: NumShield API
+  version: 1.0.0
   description: >-
-    Phone number intelligence API for Cameroon. Provides normalization,
-    validation, and operator detection for Cameroon phone numbers. Designed for
-    integration into user registration flows and fraud detection systems.
-  contact:
-    name: NumShield Team
+    Free initial v1 release with no billing or paywall. Cameroon mobile-number normalization,
+    structural validation, and configured prefix-allocation lookup. Neither validity nor
+    operator results prove reachability or ownership. This response envelope replaces the
+    pre-release unwrapped format; see the README for client migration guidance.
   license:
     name: GNU General Public License v3.0
     url: https://www.gnu.org/licenses/gpl-3.0.html
-  version: 1.0.0
 servers:
   - url: http://localhost:8080
-    description: Local development server
-tags:
-  - name: Phone Number Services
-    description: Endpoints for normalizing and validating Cameroon phone numbers
 paths:
-  /api/v1/phone-numbers/validate:
-    get:
-      tags:
-        - Phone Number Services
-      summary: Validate Cameroon phone number (GET)
-      description: Validates any Cameroon phone number format and returns whether it is valid or not.
-      operationId: validateGet
-      parameters:
-        - name: number
-          in: query
-          description: The phone number to validate
-          required: true
-          schema:
-            type: string
-          example: "690123456"
-      responses:
-        "200":
-          description: Phone number is valid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ValidationResponse"
-        "400":
-          description: Invalid phone number format or value
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+  /api/v1/number/verify:
     post:
-      tags:
-        - Phone Number Services
-      summary: Validate Cameroon phone number (POST)
-      description: Validates any Cameroon phone number format using JSR-380 annotations and Cameroon numbering rules.
-      operationId: validatePost
+      summary: Verify and enrich a Cameroon phone number
+      operationId: verify
       requestBody:
+        required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ValidationRequest"
-        required: true
+              $ref: '#/components/schemas/PhoneNumberRequest'
       responses:
-        "200":
-          description: Phone number is valid
+        '200':
+          description: Verification completed
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ValidationResponse"
-        "400":
-          description: Invalid phone number format or value
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/VerificationApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
   /api/v1/phone-numbers/normalize:
     get:
-      tags:
-        - Phone Number Services
-      summary: Normalize Cameroon phone number (GET)
-      description: >-
-        Validates and normalizes any supported Cameroon phone number format
-        into the standardized '+237XXXXXXXXX' format.
+      summary: Normalize a Cameroon phone number
       operationId: normalizeGet
       parameters:
-        - name: number
-          in: query
-          description: The raw phone number to be normalized
-          required: true
-          schema:
-            type: string
-          example: "690123456"
+        - $ref: '#/components/parameters/Number'
       responses:
-        "200":
-          description: Phone number successfully validated and normalized
+        '200':
+          description: Number normalized
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/NormalizationResponse"
-        "400":
-          description: Malformed input or validation failure
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/NormalizationApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
     post:
-      tags:
-        - Phone Number Services
-      summary: Normalize Cameroon phone number (POST)
-      description: >-
-        Validates and normalizes any supported Cameroon phone number format
-        into the standardized '+237XXXXXXXXX' format.
+      summary: Normalize a Cameroon phone number
       operationId: normalizePost
       requestBody:
+        required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/NormalizationRequest"
-        required: true
+              $ref: '#/components/schemas/PhoneNumberRequest'
       responses:
-        "200":
-          description: Phone number successfully validated and normalized
+        '200':
+          description: Number normalized
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/NormalizationResponse"
-        "400":
-          description: Malformed input or validation failure
+                $ref: '#/components/schemas/NormalizationApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
+  /api/v1/phone-numbers/validate:
+    get:
+      summary: Validate a Cameroon phone number
+      operationId: validateGet
+      parameters:
+        - $ref: '#/components/parameters/Number'
+      responses:
+        '200':
+          description: Number validated
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: '#/components/schemas/ValidationApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+    post:
+      summary: Validate a Cameroon phone number
+      operationId: validatePost
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PhoneNumberRequest'
+      responses:
+        '200':
+          description: Number validated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '415':
+          $ref: '#/components/responses/UnsupportedMediaType'
 components:
+  parameters:
+    Number:
+      name: number
+      in: query
+      required: true
+      schema:
+        type: string
+      example: '690123456'
+  responses:
+    MethodNotAllowed:
+      description: Unsupported HTTP method; INVALID_REQUEST at REQUEST_VALIDATION
+      headers:
+        Allow:
+          description: Supported HTTP methods for the requested endpoint
+          schema:
+            type: string
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorApiResponse'
+    UnsupportedMediaType:
+      description: Unsupported request content type; INVALID_REQUEST at REQUEST_VALIDATION
+      headers:
+        Accept:
+          description: Supported request content types
+          schema:
+            type: string
+            example: application/json
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorApiResponse'
+    BadRequest:
+      description: Invalid request or phone number
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorApiResponse'
   schemas:
-    ValidationRequest:
+    PhoneNumberRequest:
       type: object
-      required:
-        - phoneNumber
+      required: [phoneNumber]
       properties:
         phoneNumber:
           type: string
-          description: The raw or normalized phone number to validate against Cameroon standards
-          example: "690123456"
+          description: Non-blank JSON string; non-string values are rejected without coercion
           minLength: 1
-    ValidationResponse:
+          example: '690123456'
+    VerificationApiResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/VerificationResponse'
+    NormalizationApiResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/NormalizationResponse'
+    ValidationApiResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/ValidationResponse'
+    SuccessEnvelope:
       type: object
+      required: [success, data, timestamp]
       properties:
-        phoneNumber:
+        success:
+          type: boolean
+          const: true
+        timestamp:
           type: string
-          description: The normalized version of the validated phone number
-          example: "+237690123456"
+          format: date-time
+    ErrorApiResponse:
+      type: object
+      required: [success, error, timestamp]
+      properties:
+        success:
+          type: boolean
+          const: false
+        error:
+          $ref: '#/components/schemas/ApiError'
+        timestamp:
+          type: string
+          format: date-time
+    ApiError:
+      type: object
+      required: [code, message, stage]
+      properties:
+        code:
+          type: string
+          enum: [INVALID_REQUEST, INVALID_PHONE_NUMBER]
+        message:
+          type: string
+        stage:
+          type: string
+          enum: [REQUEST_VALIDATION, NORMALIZATION, VALIDATION]
+    VerificationResponse:
+      type: object
+      required: [input, normalized, valid, operator, countryCode, country]
+      properties:
+        input:
+          type: string
+        normalized:
+          type: string
+          example: '+237690123456'
         valid:
           type: boolean
-          description: True if the phone number is valid according to Cameroon standards, false otherwise
-          example: true
-    NormalizationRequest:
-      type: object
-      required:
-        - phoneNumber
-      properties:
-        phoneNumber:
+          description: Structural validity only; does not prove reachability or ownership
+          const: true
+        operator:
           type: string
-          description: >-
-            The raw phone number to be normalized. Supports local, country-code
-            with or without +, and 00 prefixes.
-          example: "690123456"
+          description: Configured prefix allocation, not a live serving-network lookup
+          enum: [MTN, ORANGE, NEXTTEL, CAMTEL, UNKNOWN]
+        countryCode:
+          type: string
+          const: '237'
+        country:
+          type: string
+          const: CM
     NormalizationResponse:
       type: object
+      required: [raw, normalized]
       properties:
         raw:
           type: string
-          description: The original raw phone number input provided by the client
-          example: "690 12 34 56"
         normalized:
           type: string
-          description: The normalized phone number in standard Cameroon format (+237XXXXXXXXX)
-          example: "+237690123456"
-    ErrorResponse:
+          example: '+237690123456'
+    ValidationResponse:
       type: object
+      required: [phoneNumber, valid]
       properties:
-        error:
+        phoneNumber:
           type: string
-          description: >-
-            Descriptive validation error message explaining why the
-            normalization failed
-          example: "Phone number contains invalid characters"
+          example: '+237690123456'
+        valid:
+          type: boolean
+          description: Structural validity only; does not prove reachability or ownership
+          const: true

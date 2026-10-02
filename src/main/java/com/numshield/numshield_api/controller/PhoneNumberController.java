@@ -1,6 +1,6 @@
 package com.numshield.numshield_api.controller;
 
-import com.numshield.numshield_api.dto.ErrorResponse;
+import com.numshield.numshield_api.dto.StandardApiResponse;
 import com.numshield.numshield_api.dto.NormalizationRequest;
 import com.numshield.numshield_api.dto.NormalizationResponse;
 import com.numshield.numshield_api.dto.ValidationRequest;
@@ -22,6 +22,8 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/api/v1/phone-numbers")
+@ApiResponse(responseCode = "405", description = "HTTP method is not supported",
+        content = @Content(schema = @Schema(implementation = StandardApiResponse.class)))
 @Tag(name = "Phone Number Services", description = "Endpoints for normalizing and validating Cameroon phone numbers")
 public class PhoneNumberController {
 
@@ -32,6 +34,8 @@ public class PhoneNumberController {
      * @return the normalized phone number or an error message
      */
     @PostMapping(value = "/normalize", consumes = "application/json", produces = "application/json")
+    @ApiResponse(responseCode = "415", description = "Request content type is not supported",
+            content = @Content(schema = @Schema(implementation = StandardApiResponse.class)))
     @Operation(
             summary = "Normalize Cameroon phone number (POST)",
             description = "Validates and normalizes any supported Cameroon phone number format into the standardized '+237XXXXXXXXX' format.",
@@ -39,19 +43,16 @@ public class PhoneNumberController {
                     @ApiResponse(
                             responseCode = "200",
                             description = "Phone number successfully validated and normalized",
-                            content = @Content(schema = @Schema(implementation = NormalizationResponse.class))
+                            useReturnTypeSchema = true
                     ),
                     @ApiResponse(
                             responseCode = "400",
                             description = "Malformed input or validation failure",
-                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+                            content = @Content(schema = @Schema(implementation = StandardApiResponse.class))
                     )
             }
     )
-    public ResponseEntity<NormalizationResponse> normalizePost(@RequestBody NormalizationRequest request) {
-        if (request == null || request.getPhoneNumber() == null) {
-            throw new IllegalArgumentException("Missing 'phoneNumber' field in request body");
-        }
+    public ResponseEntity<StandardApiResponse<NormalizationResponse>> normalizePost(@Valid @RequestBody NormalizationRequest request) {
         return processNormalization(request.getPhoneNumber());
     }
 
@@ -69,16 +70,16 @@ public class PhoneNumberController {
                     @ApiResponse(
                             responseCode = "200",
                             description = "Phone number successfully validated and normalized",
-                            content = @Content(schema = @Schema(implementation = NormalizationResponse.class))
+                            useReturnTypeSchema = true
                     ),
                     @ApiResponse(
                             responseCode = "400",
                             description = "Malformed input or validation failure",
-                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+                            content = @Content(schema = @Schema(implementation = StandardApiResponse.class))
                     )
             }
     )
-    public ResponseEntity<NormalizationResponse> normalizeGet(
+    public ResponseEntity<StandardApiResponse<NormalizationResponse>> normalizeGet(
             @Parameter(description = "The raw phone number to be normalized", example = "690123456", required = true)
             @RequestParam("number") String phoneNumber) {
         return processNormalization(phoneNumber);
@@ -91,6 +92,8 @@ public class PhoneNumberController {
      * @return the validation details or an error message
      */
     @PostMapping(value = "/validate", consumes = "application/json", produces = "application/json")
+    @ApiResponse(responseCode = "415", description = "Request content type is not supported",
+            content = @Content(schema = @Schema(implementation = StandardApiResponse.class)))
     @Operation(
             summary = "Validate Cameroon phone number (POST)",
             description = "Validates any Cameroon phone number format using JSR-380 annotations and Cameroon numbering rules.",
@@ -98,21 +101,21 @@ public class PhoneNumberController {
                     @ApiResponse(
                             responseCode = "200",
                             description = "Phone number is valid",
-                            content = @Content(schema = @Schema(implementation = ValidationResponse.class))
+                            useReturnTypeSchema = true
                     ),
                     @ApiResponse(
                             responseCode = "400",
                             description = "Invalid phone number format or value",
-                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+                            content = @Content(schema = @Schema(implementation = StandardApiResponse.class))
                     )
             }
     )
-    public ResponseEntity<ValidationResponse> validatePost(@Valid @RequestBody ValidationRequest request) {
+    public ResponseEntity<StandardApiResponse<ValidationResponse>> validatePost(@Valid @RequestBody ValidationRequest request) {
         // 1. Normalization
         String normalized = CameroonPhoneNumberNormalizer.normalize(request.getPhoneNumber());
         // 2. Explicit validation after normalization (AC: validation occurs after normalization)
         CameroonPhoneNumberValidator.validate(normalized);
-        return ResponseEntity.ok(new ValidationResponse(normalized, true));
+        return ResponseEntity.ok(StandardApiResponse.success(new ValidationResponse(normalized, true)));
     }
 
     /**
@@ -129,33 +132,33 @@ public class PhoneNumberController {
                     @ApiResponse(
                             responseCode = "200",
                             description = "Phone number is valid",
-                            content = @Content(schema = @Schema(implementation = ValidationResponse.class))
+                            useReturnTypeSchema = true
                     ),
                     @ApiResponse(
                             responseCode = "400",
                             description = "Invalid phone number format or value",
-                            content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+                            content = @Content(schema = @Schema(implementation = StandardApiResponse.class))
                     )
             }
     )
-    public ResponseEntity<ValidationResponse> validateGet(
+    public ResponseEntity<StandardApiResponse<ValidationResponse>> validateGet(
             @Parameter(description = "The phone number to validate", example = "690123456", required = true)
             @RequestParam("number") String phoneNumber) {
         String normalized = CameroonPhoneNumberNormalizer.normalize(phoneNumber);
         CameroonPhoneNumberValidator.validate(normalized);
-        return ResponseEntity.ok(new ValidationResponse(normalized, true));
+        return ResponseEntity.ok(StandardApiResponse.success(new ValidationResponse(normalized, true)));
     }
 
-    private ResponseEntity<NormalizationResponse> processNormalization(String phoneNumber) {
+    private ResponseEntity<StandardApiResponse<NormalizationResponse>> processNormalization(String phoneNumber) {
         // 1. Normalization
         String normalized = CameroonPhoneNumberNormalizer.normalize(phoneNumber);
 
         // 2. Validation
         CameroonPhoneNumberValidator.validate(normalized);
 
-        return ResponseEntity.ok(NormalizationResponse.builder()
+        return ResponseEntity.ok(StandardApiResponse.success(NormalizationResponse.builder()
                 .raw(phoneNumber)
                 .normalized(normalized)
-                .build());
+                .build()));
     }
 }

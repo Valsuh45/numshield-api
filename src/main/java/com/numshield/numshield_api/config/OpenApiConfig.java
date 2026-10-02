@@ -18,10 +18,12 @@ public class OpenApiConfig {
         return new OpenAPI()
                 .info(new Info()
                         .title("NumShield API")
-                        .description("Phone number intelligence API for Cameroon. "
-                                + "Provides normalization, validation, and operator detection "
-                                + "for Cameroon phone numbers. Designed for integration into "
-                                + "user registration flows and fraud detection systems.")
+                        .description("Free initial v1 release for Cameroon mobile-number normalization, "
+                                + "structural validation, and configured prefix-allocation lookup. "
+                                + "No billing or paywall. Validity and operator results do not prove "
+                                + "reachability or ownership. All phoneNumber JSON values must be strings. "
+                                + "The response envelope replaces the pre-release unwrapped format; "
+                                + "see README migration guidance before upgrading existing clients.")
                         .version("1.0.0")
                         .contact(new Contact()
                                 .name("NumShield Team"))
