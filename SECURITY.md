@@ -37,3 +37,5 @@ As of 2026-10-18:
 GitHub reported secret-scanning non-provider patterns and validity checks as disabled after an enablement request, so this repository does not rely on those optional features. Re-evaluate them when the account or repository capabilities change.
 
 Dependabot and CodeQL findings are triaged under the severity policy above. Secret-scanning alerts require immediate credential revocation or rotation before code cleanup; deleting a leaked secret from the current branch is not sufficient.
+
+The initial CodeQL scan found three medium-severity `actions/missing-workflow-permissions` alerts in the pre-change CI and publishing workflows. This security configuration adds explicit top-level `contents: read` permissions to address them. After merge, confirm the next default-branch scan closes all three alerts; if any remain open, create a remediation issue rather than dismissing them without evidence.
