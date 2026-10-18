@@ -6,7 +6,7 @@ NumShield is a Cameroon phone-number intelligence API. It normalizes numbers, va
 
 The initial release is free, with no billing or paywall. Its scope is Cameroon mobile-number normalization, structural validation, and prefix-allocation lookup through the endpoints below.
 
-`valid: true` means the number has a supported structural format. `operator` reports the configured prefix allocation, not a live lookup of the current serving network. Neither field proves that a number is allocated to a subscriber, reachable, active, or owned by the caller. NumShield does not send an OTP or verify ownership.
+`valid: true` means the number has a supported structural format. `operator` reports an operator association documented in the versioned prefix dataset, not a live lookup of the current serving network. Undocumented prefixes return `UNKNOWN`. The current dataset is version `1`, verified on 2026-10-18 against the ART numbering-plan communication reproduced by ITU; its documented operator assignments became effective on 2014-11-21 at 22:59 UTC. See [operator allocation data](docs/operator-allocation-data.md) for provenance, limitations, and the update and rollback procedure. Neither field proves that a number is allocated to a subscriber, reachable, active, or owned by the caller. NumShield does not send an OTP or verify ownership.
 
 The wrapped response is the initial v1 contract (`1.0.0` in OpenAPI). The earlier unwrapped responses are a pre-release format; they are not served alongside this contract. Integrations already using that format must migrate before upgrading:
 
@@ -69,7 +69,7 @@ curl -X POST http://localhost:8080/api/v1/number/verify \
 }
 ```
 
-Known operators are `MTN`, `ORANGE`, `NEXTTEL`, and `CAMTEL`. A structurally valid mobile range that has no configured allocation is returned as `UNKNOWN`.
+The version 1 dataset maps `66` to `NEXTTEL`, `67` to `MTN`, and `69` to `ORANGE`. Other structurally valid mobile prefixes, including `62` and `65X`, return `UNKNOWN` until an authoritative source confirms their allocation. `CAMTEL` remains in the v1 response enum for compatibility, but the current dataset has no verified Camtel mobile prefix.
 
 ## Other endpoints
 

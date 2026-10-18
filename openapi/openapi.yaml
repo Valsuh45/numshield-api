@@ -233,7 +233,7 @@ components:
           const: true
         operator:
           type: string
-          description: Configured prefix allocation, not a live serving-network lookup
+          description: Versioned published prefix allocation; undocumented ranges are UNKNOWN and this is not a live serving-network lookup
           enum: [MTN, ORANGE, NEXTTEL, CAMTEL, UNKNOWN]
         countryCode:
           type: string
