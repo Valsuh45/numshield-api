@@ -14,5 +14,6 @@ All notable user-visible changes are recorded here. Releases follow Semantic Ver
 ### Changed
 
 - Aligned the planned Maven artifact version with the frozen `1.0.0` OpenAPI contract.
+- Operator detection now uses only prefixes attributed to an operator by the documented allocation source; unverified ranges return `UNKNOWN`.
 
 The first `1.0.0` release remains unpublished until the production readiness gate is accepted.

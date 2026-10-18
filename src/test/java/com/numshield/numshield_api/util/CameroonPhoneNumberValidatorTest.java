@@ -12,9 +12,9 @@ class CameroonPhoneNumberValidatorTest {
     @ParameterizedTest
     @ValueSource(strings = {
             "+237690123456", // Mobile MTN/Orange
-            "+237650123456", // Mobile Orange
+            "+237650123456", // Structurally valid mobile number
             "+237670123456", // Mobile MTN
-            "+237620123456"  // Mobile Nexttel
+            "+237620123456"  // Structurally valid mobile number
     })
     void shouldValidateValidNormalizedNumbers(String number) {
         assertTrue(CameroonPhoneNumberValidator.isValid(number));

@@ -87,7 +87,7 @@ class ApiContractIntegrationTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"690123456,ORANGE", "650123456,MTN", "660123456,NEXTTEL", "620123456,CAMTEL", "680123456,UNKNOWN"})
+    @CsvSource({"690123456,ORANGE", "670123456,MTN", "660123456,NEXTTEL", "650123456,MTN", "655123456,ORANGE", "620123456,UNKNOWN", "680123456,UNKNOWN"})
     void verifiesStringInputsAndPrefixAllocation(String number, String operator) throws Exception {
         mockMvc.perform(post("/api/v1/number/verify").contentType(MediaType.APPLICATION_JSON)
                         .content("{\"phoneNumber\":\"" + number + "\"}"))
