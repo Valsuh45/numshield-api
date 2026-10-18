@@ -102,6 +102,21 @@ jobs:
           distribution: ${{ env.JAVA_DISTRIBUTION }}
           cache: maven
 
+      - name: Verify release version consistency
+        shell: bash
+        run: |
+          PROJECT_VERSION="$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)"
+          API_VERSION="$(awk '/^  version:/ { print $2; exit }' openapi/openapi.yaml)"
+          RUNTIME_API_VERSION="$(sed -n 's/.*\.version("\([^"]*\)").*/\1/p' src/main/java/com/numshield/numshield_api/config/OpenApiConfig.java)"
+          BASE_VERSION="${PROJECT_VERSION%-SNAPSHOT}"
+
+          if [[ "$BASE_VERSION" != "$API_VERSION" || "$BASE_VERSION" != "$RUNTIME_API_VERSION" ]]; then
+            echo "::error::Version mismatch: Maven=$PROJECT_VERSION, static OpenAPI=$API_VERSION, runtime OpenAPI=$RUNTIME_API_VERSION"
+            exit 1
+          fi
+
+          echo "Verified release version $BASE_VERSION (Maven artifact $PROJECT_VERSION)."
+
       - name: Package (skip tests — already covered in build-and-test)
         run: ./mvnw package --no-transfer-progress -B -DskipTests -q
 
