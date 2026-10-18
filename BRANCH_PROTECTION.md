@@ -53,3 +53,5 @@ gh api repos/Valsuh45/numshield-api/branches/main/protection
 ```
 
 A protection test is complete only when a pull request with a deliberately failing test reports a failed required check and GitHub reports the pull request as blocked. Remove the probe, rerun CI successfully, and retain the failed run URL as evidence.
+
+On 2026-10-18, pull request [#28](https://github.com/Valsuh45/numshield-api/pull/28) included a temporary failing JUnit probe at commit `bf2c09f`. The required [Build & Test job failed](https://github.com/Valsuh45/numshield-api/actions/runs/39139511666/job/117710845688), Package Verification was skipped, and GitHub reported the ready pull request as `BLOCKED`. The probe was then removed so the final change could pass both required checks.
