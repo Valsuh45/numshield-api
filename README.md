@@ -23,6 +23,19 @@ Both outcomes include `success` and an ISO-8601 `timestamp`. Success includes `d
 - Java 21
 - Docker (optional)
 
+## Maintainer setup
+
+The canonical repository remote is `git@github.com:Valsuh45/numshield-api.git`.
+
+```bash
+git clone git@github.com:Valsuh45/numshield-api.git
+cd numshield-api
+git remote -v
+./mvnw clean verify
+```
+
+Development targets `develop`, the default integration branch. `main` contains release-ready history only. See [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution workflow and [RELEASING.md](RELEASING.md) for version, tag, image, and release-note conventions.
+
 ## Run locally
 
 ```bash
@@ -90,3 +103,5 @@ docker build -t numshield-api .
 ```
 
 The maintained static API contract is in [`openapi/openapi.yaml`](openapi/openapi.yaml).
+
+Changes that affect users must also update [CHANGELOG.md](CHANGELOG.md). The current Maven version is `1.0.0-SNAPSHOT`; the first `v1.0.0` tag and GitHub release remain deferred until the production launch gate.

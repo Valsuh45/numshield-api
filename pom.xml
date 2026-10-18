@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.numshield</groupId>
 	<artifactId>numshield-api</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0-SNAPSHOT</version>
 	<name>NumShield API</name>
 	<description>Phone number intelligence, validation, and operator detection API</description>
 	<url>https://github.com/Valsuh45/numshield-api</url>

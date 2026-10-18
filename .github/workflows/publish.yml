@@ -3,7 +3,8 @@
 #
 # Triggers:
 #   • Push to `develop`  → builds and pushes a `develop-<sha>` + `develop` tag
-#   • Push to `main`     → builds and pushes a semver tag + `latest`
+#   • Push to `main`     → builds and pushes a `main` + `main-<sha>` tag
+#   • Push of `vX.Y.Z`   → builds and pushes `X.Y.Z`, `X.Y`, and `latest`
 #
 # Image registry: ghcr.io/<owner>/<repo>
 #
@@ -108,7 +109,7 @@ jobs:
       # docker/metadata-action automatically generates:
       #   • `develop`                    — when pushed to the develop branch
       #   • `develop-<sha>`              — short commit SHA for traceability
-      #   • `latest` + `v<semver>`       — when a vX.Y.Z tag is pushed
+      #   • `<semver>` + `<major>.<minor>` + `latest` — for a vX.Y.Z tag
       #   • `main`                       — when pushed to the main branch
       - name: Extract Docker metadata
         id: meta
