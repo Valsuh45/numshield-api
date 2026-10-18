@@ -3,7 +3,7 @@
 # Compiles the project and produces the executable JAR using Maven + JDK 21.
 # The Maven wrapper is used so the pipeline never needs Maven pre-installed.
 # =============================================================================
-FROM eclipse-temurin:21-jdk-alpine AS builder
+FROM eclipse-temurin:25-jdk-alpine AS builder
 
 WORKDIR /build
 
@@ -25,7 +25,7 @@ RUN ./mvnw package -B --no-transfer-progress -DskipTests -q
 # A minimal JRE 21 Alpine image; no build tools, no shell dependencies.
 # Non-root user is created for security hardening.
 # =============================================================================
-FROM eclipse-temurin:21-jre-alpine AS runtime
+FROM eclipse-temurin:25-jre-alpine AS runtime
 
 # Create a dedicated non-root user and group.
 RUN addgroup -S numshield && adduser -S numshield -G numshield
