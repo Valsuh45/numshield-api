@@ -15,10 +15,10 @@ class TelecomOperatorDetectorTest {
 
     @ParameterizedTest
     @CsvSource({
-            "+237650123456, UNKNOWN",
-            "+237654123456, UNKNOWN",
-            "+237655123456, UNKNOWN",
-            "+237659123456, UNKNOWN",
+            "+237650123456, MTN",
+            "+237654123456, MTN",
+            "+237655123456, ORANGE",
+            "+237659123456, ORANGE",
             "+237660123456, NEXTTEL",
             "+237669123456, NEXTTEL",
             "+237670123456, MTN",

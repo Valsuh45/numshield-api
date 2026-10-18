@@ -24,7 +24,17 @@ public final class OperatorAllocationDataset {
     public static final List<Allocation> ALLOCATIONS = List.of(
             new Allocation("66", TelecomOperator.NEXTTEL, ITU_ART_2014.id()),
             new Allocation("67", TelecomOperator.MTN, ITU_ART_2014.id()),
-            new Allocation("69", TelecomOperator.ORANGE, ITU_ART_2014.id()));
+            new Allocation("650", TelecomOperator.MTN, ITU_ART_2014.id()),
+            new Allocation("651", TelecomOperator.MTN, ITU_ART_2014.id()),
+            new Allocation("652", TelecomOperator.MTN, ITU_ART_2014.id()),
+            new Allocation("653", TelecomOperator.MTN, ITU_ART_2014.id()),
+            new Allocation("654", TelecomOperator.MTN, ITU_ART_2014.id()),
+            new Allocation("69", TelecomOperator.ORANGE, ITU_ART_2014.id()),
+            new Allocation("655", TelecomOperator.ORANGE, ITU_ART_2014.id()),
+            new Allocation("656", TelecomOperator.ORANGE, ITU_ART_2014.id()),
+            new Allocation("657", TelecomOperator.ORANGE, ITU_ART_2014.id()),
+            new Allocation("658", TelecomOperator.ORANGE, ITU_ART_2014.id()),
+            new Allocation("659", TelecomOperator.ORANGE, ITU_ART_2014.id()));
 
     private OperatorAllocationDataset() {
     }

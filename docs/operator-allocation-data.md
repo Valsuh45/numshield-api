@@ -13,10 +13,10 @@ The ART is the authority that establishes and manages Cameroon's national number
 | National prefix | Published operator | Source |
 | --- | --- | --- |
 | `66` | NEXTTEL (ex-VIETTEL) | ITU Operational Bulletin No. 1063, Cameroon mobile-number table, p. 6 |
-| `67` | MTN Cameroon | ITU Operational Bulletin No. 1063, Cameroon mobile-number table, p. 6 |
-| `69` | Orange Cameroun | ITU Operational Bulletin No. 1063, Cameroon mobile-number table, p. 6 |
+| `67`, `650`–`654` | MTN Cameroon | ITU Operational Bulletin No. 1063, Cameroon mobile-number table, p. 6 |
+| `69`, `655`–`659` | Orange Cameroun | ITU Operational Bulletin No. 1063, Cameroon mobile-number table, p. 6 |
 
-The same table lists `650`–`654` and `655`–`659` as mobile prefixes but does not identify an operator for those rows. The cited plan does not identify `62` or `68` as mobile operator allocations. These ranges therefore return `UNKNOWN`; common or historical claims are not substituted for source evidence. The plan identifies Camtel in fixed and CDMA numbering sections, which does not establish a Camtel mobile-prefix allocation.
+In the printed table, the MTN operator cell spans the `67` and `650`–`654` entries; the Orange cell spans `69` and `655`–`659`. The PDF text layer omits the repeated/merged cell contents on the latter rows, so the assignments were verified against the rendered table layout. The cited plan does not identify `62` or `68` as mobile operator allocations. These prefixes therefore return `UNKNOWN`; common or historical claims are not substituted for source evidence. The plan identifies Camtel in fixed and CDMA numbering sections, which does not establish a Camtel mobile-prefix allocation.
 
 ## Meaning and limitations
 

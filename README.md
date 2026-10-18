@@ -69,7 +69,7 @@ curl -X POST http://localhost:8080/api/v1/number/verify \
 }
 ```
 
-The version 1 dataset maps `66` to `NEXTTEL`, `67` to `MTN`, and `69` to `ORANGE`. Other structurally valid mobile prefixes, including `62` and `65X`, return `UNKNOWN` until an authoritative source confirms their allocation. `CAMTEL` remains in the v1 response enum for compatibility, but the current dataset has no verified Camtel mobile prefix.
+The version 1 dataset maps `66` to `NEXTTEL`, `67` and `650`–`654` to `MTN`, and `69` and `655`–`659` to `ORANGE`. Other structurally valid mobile prefixes, including `62`, return `UNKNOWN` until an authoritative source confirms their allocation. `CAMTEL` remains in the v1 response enum for compatibility, but the current dataset has no verified Camtel mobile prefix.
 
 ## Other endpoints
 
