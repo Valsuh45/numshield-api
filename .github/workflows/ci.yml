@@ -77,7 +77,7 @@ jobs:
       # ── Upload test reports ─────────────────────────────────────────────────
       - name: Upload Surefire test reports
         if: always()              # Upload even when tests fail so failures are visible
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: surefire-reports-${{ github.run_number }}
           path: target/surefire-reports/
@@ -134,7 +134,7 @@ jobs:
           find target -maxdepth 1 -name "*.jar" ! -name "*sources*" ! -name "*javadoc*"
 
       - name: Upload packaged JAR
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: numshield-api-jar-${{ github.run_number }}
           path: target/*.jar
