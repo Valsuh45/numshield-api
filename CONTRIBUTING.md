@@ -19,7 +19,7 @@ The `origin` fetch and push URLs should both be `git@github.com:Valsuh45/numshie
 - `develop` is the default integration branch. Start feature, fix, documentation, and maintenance branches from an up-to-date `develop`.
 - Open pull requests into `develop`. Keep each pull request focused and include verification evidence.
 - `main` is the release branch. Changes reach it through a release pull request from a `release/vX.Y.Z` branch; ordinary work does not target `main` directly.
-- Do not force-push or delete `develop` or `main`. Repository rules for those branches are tracked separately in issue #13.
+- Do not force-push or delete `develop` or `main`. See [BRANCH_PROTECTION.md](BRANCH_PROTECTION.md) for enforced checks, the sole-maintainer review exception, and emergency recovery policy.
 
 Example:
 
