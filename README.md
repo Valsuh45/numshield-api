@@ -105,3 +105,7 @@ docker build -t numshield-api .
 The maintained static API contract is in [`openapi/openapi.yaml`](openapi/openapi.yaml).
 
 Changes that affect users must also update [CHANGELOG.md](CHANGELOG.md). The current Maven version is `1.0.0-SNAPSHOT`; the first `v1.0.0` tag and GitHub release remain deferred until the production launch gate.
+
+## Security
+
+Report vulnerabilities privately and review the current support, severity, and automated-check policy in [SECURITY.md](SECURITY.md). Do not place credentials, tokens, submitted phone numbers, or vulnerability details in a public issue.

@@ -33,6 +33,9 @@ concurrency:
   group: publish-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 env:
   JAVA_VERSION: "21"
   JAVA_DISTRIBUTION: "temurin"
