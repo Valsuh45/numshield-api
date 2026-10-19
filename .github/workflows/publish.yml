@@ -54,7 +54,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up JDK 21 (Temurin)
         uses: actions/setup-java@v6
@@ -90,7 +90,7 @@ jobs:
     steps:
       # ── Checkout ────────────────────────────────────────────────────────────
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # ── Set up QEMU (needed for multi-platform builds) ───────────────────
       - name: Set up QEMU
